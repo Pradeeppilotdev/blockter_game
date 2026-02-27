@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --config web3-space-shooter/vite.config.js --host --port 3000",
     "build": "vite build --config web3-space-shooter/vite.config.js",
-    "start": "serve web3-space-shooter/dist -s -l 3000"
+    "preview": "vite preview --config web3-space-shooter/vite.config.js --port 3000"
   },
   "dependencies": {
     "ethers": "^6.16.0",
