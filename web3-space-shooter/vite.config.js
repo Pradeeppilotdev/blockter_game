@@ -1,9 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-    root: "frontend",
+    root: resolve(__dirname, "frontend"),
     plugins: [react()],
     resolve: {
         alias: {
@@ -18,19 +21,14 @@ export default defineConfig({
     server: {
         port: 3000,
         open: false,
-        host: true
+        host: true,
+        strictPort: false
     },
     build: {
-        outDir: "../dist",
+        outDir: resolve(__dirname, "dist"),
         emptyOutDir: true,
-        sourcemap: true,
-        minify: "terser",
-        terserOptions: {
-            compress: {
-                drop_console: true,
-                drop_debugger: true
-            }
-        },
+        sourcemap: false,
+        minify: "esbuild",
         rollupOptions: {
             output: {
                 manualChunks: {
