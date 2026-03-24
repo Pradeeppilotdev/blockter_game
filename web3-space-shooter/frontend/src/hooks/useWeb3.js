@@ -97,7 +97,7 @@ export const useWeb3 = () => {
       }
 
       // Listen for account changes
-      window.ethereum.on('accountsChanged', (accounts) => {
+      const handleAccountsChanged = (accounts) => {
         if (accounts.length === 0) {
           setProvider(null);
           setSigner(null);
@@ -106,10 +106,19 @@ export const useWeb3 = () => {
         } else {
           setAccount(accounts[0]);
         }
-      });
-      window.ethereum.on('chainChanged', () => {
+      };
+
+      const handleChainChanged = () => {
         window.location.reload();
-      });
+      };
+
+      // Remove old listeners first to avoid duplicates
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener('chainChanged', handleChainChanged);
+
+      // Add new listeners
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
 
     } catch (err) {
       setError(err.message || 'Failed to connect wallet');
@@ -146,6 +155,17 @@ export const useWeb3 = () => {
   const isCorrectNetwork = () => {
     return chainId === 8119; // Shardeum EVM Testnet (Mezame)
   };
+
+  // Cleanup event listeners on unmount
+  useEffect(() => {
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeAllListeners('accountsChanged');
+        window.ethereum.removeAllListeners('chainChanged');
+        window.ethereum.removeAllListeners('disconnect');
+      }
+    };
+  }, []);
 
   return {
     provider,
