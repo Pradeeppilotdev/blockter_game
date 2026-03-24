@@ -36,7 +36,7 @@ export default function WalletConnect({ onConnect }) {
     } else {
       onConnect(null);
     }
-  }, [account, signer, chainId]);
+  }, [account, signer, chainId, onConnect, provider]);
 
   const updateBalance = async () => {
     const bal = await getBalance();
