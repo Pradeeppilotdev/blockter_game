@@ -33,46 +33,39 @@ export default function Leaderboard({ web3Data }) {
     setLoading(true);
     try {
       const contracts = getContracts();
-      
+
       // Check if contracts are available and valid
-      const hasValidContracts = contracts && 
-                               contracts.game && 
-                               contracts.game.address && 
+      const hasValidContracts = contracts &&
+                               contracts.game &&
+                               contracts.game.address &&
                                contracts.game.address !== '0x...';
-      
-      if (hasValidContracts) {
+
+      // NOTE: SpaceShooterGame contract doesn't have getTopPlayers or getPlayerStats
+      // The contract only has highScores(address) for individual lookups
+      // For now, we use mock data. Use LeaderboardNew.jsx with Firebase for real leaderboard
+
+      if (hasValidContracts && web3Data?.account) {
         try {
-          // Try to fetch from real contracts
-          const topAddresses = await contracts.game.getTopPlayers(20);
-          
-          const playerData = await Promise.all(
-            topAddresses.map(async (address, index) => {
-              const stats = await contracts.game.getPlayerStats(address);
-              return {
-                rank: index + 1,
-                address: address,
-                name: stats.playerName || 'Unknown',
-                score: Number(stats.highScore),
-                games: Number(stats.gamesPlayed),
-                earned: parseFloat(stats.totalEarned).toFixed(2),
-                isCurrentPlayer: address.toLowerCase() === web3Data?.account?.toLowerCase()
-              };
-            })
-          );
+          // Get current user's high score only
+          const userHighScore = await contracts.game.highScores(web3Data.account);
 
-          // Sort by score
-          const sorted = playerData.sort((a, b) => b.score - a.score);
-          
-          // Update ranks after sorting
-          sorted.forEach((player, index) => {
-            player.rank = index + 1;
-            if (player.isCurrentPlayer) {
-              setPlayerRank(index + 1);
+          // Use mock data with user's real score injected
+          const leaderboardData = MOCK_LEADERBOARD.map((player, index) => ({
+            ...player,
+            rank: index + 1,
+            isCurrentPlayer: web3Data?.account?.toLowerCase() === player.address.toLowerCase()
+          }));
+
+          // If user has a score, find/update their entry
+          if (userHighScore > 0) {
+            const userEntry = leaderboardData.find(p => p.isCurrentPlayer);
+            if (userEntry) {
+              userEntry.score = Number(userHighScore);
             }
-          });
+          }
 
-          setLeaderboard(sorted);
-          setUsingMockData(false);
+          setLeaderboard(leaderboardData);
+          setUsingMockData(true); // Still mostly mock
         } catch (contractError) {
           console.warn('Contract call failed, using mock data:', contractError);
           useMockData();
