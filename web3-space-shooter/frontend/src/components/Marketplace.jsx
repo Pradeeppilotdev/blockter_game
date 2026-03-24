@@ -4,10 +4,10 @@ import { useGameContract } from '../hooks/useGameContract';
 import { ethers } from 'ethers';
 
 const SHIP_TIERS = [
-  { id: 'common', name: 'Scout', price: '0.01', color: '#6b7280', image: '/images/ships/scout-ufo.png', stats: { speed: 5, health: 5, fireRate: 5, damage: 5 } },
-  { id: 'rare', name: 'Fighter', price: '0.05', color: '#3b82f6', image: '/images/ships/viper-rocket.png', stats: { speed: 7, health: 7, fireRate: 6, damage: 7 } },
-  { id: 'epic', name: 'Destroyer', price: '0.1', color: '#a855f7', image: '/images/ships/destroyer-satellite.png', stats: { speed: 8, health: 9, fireRate: 7, damage: 8 } },
-  { id: 'legendary', name: 'Titan', price: '0.5', color: '#f59e0b', image: '/images/ships/titan-invader.png', stats: { speed: 10, health: 10, fireRate: 10, damage: 10 } }
+  { id: 'common', rarity: 0, name: 'Scout', price: '0.01', color: '#6b7280', image: '/images/ships/scout-ufo.png', stats: { speed: 5, health: 5, fireRate: 5, damage: 5 } },
+  { id: 'rare', rarity: 1, name: 'Fighter', price: '0.05', color: '#3b82f6', image: '/images/ships/viper-rocket.png', stats: { speed: 7, health: 7, fireRate: 6, damage: 7 } },
+  { id: 'epic', rarity: 2, name: 'Destroyer', price: '0.1', color: '#a855f7', image: '/images/ships/destroyer-satellite.png', stats: { speed: 8, health: 9, fireRate: 7, damage: 8 } },
+  { id: 'legendary', rarity: 3, name: 'Titan', price: '0.5', color: '#f59e0b', image: '/images/ships/titan-invader.png', stats: { speed: 10, health: 10, fireRate: 10, damage: 10 } }
 ];
 
 export default function Marketplace({ web3Data, onSelectShip, selectedShip }) {
@@ -25,7 +25,7 @@ export default function Marketplace({ web3Data, onSelectShip, selectedShip }) {
     if (web3Data?.account) {
       loadInventory();
     }
-  }, [web3Data]);
+  }, [web3Data?.account]);
 
   const loadInventory = async () => {
     if (!web3Data?.account) return;
@@ -49,8 +49,9 @@ export default function Marketplace({ web3Data, onSelectShip, selectedShip }) {
 
     setMinting(tier.id);
     try {
-      const result = await mintNFTShip(tier.id, tier.price);
-      
+      // Contract expects numeric rarity (0=common, 1=rare, 2=epic, 3=legendary)
+      const result = await mintNFTShip(tier.rarity, tier.price);
+
       if (result.success) {
         alert(`Successfully minted ${tier.name}! Token ID: ${result.tokenId}`);
         await loadInventory();
