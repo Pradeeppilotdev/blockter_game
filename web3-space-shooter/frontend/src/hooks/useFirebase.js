@@ -104,20 +104,24 @@ export const useFirebase = () => {
     switch(timeframe) {
       case 'day':
         const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // For timeframe queries, order by timestamp (required with where)
+        // Then sort by score on client-side
         q = query(
           collection(db, LEADERBOARD_COLLECTION),
           where('timestamp', '>=', dayAgo),
-          orderBy('score', 'desc'),
-          limit(maxResults)
+          orderBy('timestamp', 'desc'),
+          limit(maxResults * 2) // Get more to ensure enough after filtering
         );
         break;
       case 'week':
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        // For timeframe queries, order by timestamp (required with where)
+        // Then sort by score on client-side
         q = query(
           collection(db, LEADERBOARD_COLLECTION),
           where('timestamp', '>=', weekAgo),
-          orderBy('score', 'desc'),
-          limit(maxResults)
+          orderBy('timestamp', 'desc'),
+          limit(maxResults * 2) // Get more to ensure enough after filtering
         );
         break;
       default: // 'all'
@@ -128,14 +132,27 @@ export const useFirebase = () => {
         );
     }
 
-    const unsubscribe = onSnapshot(q, 
+    const unsubscribe = onSnapshot(q,
       (snapshot) => {
         console.log('🔥 Firebase snapshot received:', snapshot.size, 'documents');
-        const data = snapshot.docs.map((doc, index) => ({
-          rank: index + 1,
+        let data = snapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id
         }));
+
+        // For timeframe queries, sort by score on client-side
+        if (timeframe === 'day' || timeframe === 'week') {
+          data = data
+            .sort((a, b) => (b.score || 0) - (a.score || 0))
+            .slice(0, maxResults);
+        }
+
+        // Add ranks
+        data = data.map((item, index) => ({
+          rank: index + 1,
+          ...item
+        }));
+
         console.log('✅ Leaderboard data:', data);
         callback(data);
       },

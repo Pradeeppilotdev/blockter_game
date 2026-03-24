@@ -33,6 +33,9 @@ export class Enemy {
     // Movement pattern
     this.pattern = Math.random() > 0.5 ? 'sine' : 'straight';
     this.patternOffset = Math.random() * Math.PI * 2;
+
+    // Track setTimeout for cleanup
+    this.flashTimeout = null;
     this.patternSpeed = 0.02;
     
     // Shooting
@@ -98,15 +101,29 @@ export class Enemy {
 
   takeDamage(amount) {
     this.health -= amount;
-    
+
     // Hit flash effect
     this.color = '#ffffff';
-    setTimeout(() => {
-      this.color = this.getOriginalColor();
+
+    // Clear any existing flash timeout to prevent memory leaks
+    if (this.flashTimeout) {
+      clearTimeout(this.flashTimeout);
+    }
+
+    this.flashTimeout = setTimeout(() => {
+      if (this.active) { // Only update if still active
+        this.color = this.getOriginalColor();
+      }
+      this.flashTimeout = null;
     }, 50);
-    
+
     if (this.health <= 0) {
       this.active = false;
+      // Clean up timeout on destroy
+      if (this.flashTimeout) {
+        clearTimeout(this.flashTimeout);
+        this.flashTimeout = null;
+      }
       return true; // Destroyed
     }
     return false;

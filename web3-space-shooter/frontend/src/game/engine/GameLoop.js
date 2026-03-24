@@ -396,13 +396,15 @@ export class GameEngine {
       this.ctx.closePath();
       this.ctx.fill();
     }
-    
-    // Health bar
-    const healthPercent = this.player.health / this.player.maxHealth;
-    this.ctx.fillStyle = '#333';
-    this.ctx.fillRect(20, 50, 100, 10);
-    this.ctx.fillStyle = healthPercent > 0.5 ? '#0f0' : healthPercent > 0.25 ? '#ff0' : '#f00';
-    this.ctx.fillRect(20, 50, 100 * healthPercent, 10);
+
+    // Health bar (only if player exists)
+    if (this.player) {
+      const healthPercent = this.player.health / this.player.maxHealth;
+      this.ctx.fillStyle = '#333';
+      this.ctx.fillRect(20, 50, 100, 10);
+      this.ctx.fillStyle = healthPercent > 0.5 ? '#0f0' : healthPercent > 0.25 ? '#ff0' : '#f00';
+      this.ctx.fillRect(20, 50, 100 * healthPercent, 10);
+    }
     
     // Level
     this.ctx.fillStyle = '#00f3ff';
