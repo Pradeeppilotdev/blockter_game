@@ -30,15 +30,23 @@ import {
 } from 'firebase/auth';
 
 // Your Firebase configuration
+// Using environment variables for security (prefer this over hardcoding)
 const firebaseConfig = {
-  apiKey: "AIzaSyAHy5dW9Xz-Od0nnAwUXG074qYdSqAuW4U",
-  authDomain: "blocktergame.firebaseapp.com",
-  projectId: "blocktergame",
-  storageBucket: "blocktergame.firebasestorage.app",
-  messagingSenderId: "28370993719",
-  appId: "1:28370993719:web:becbb8517a895f4b0275b2",
-  measurementId: "G-RLX4H528YR"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAHy5dW9Xz-Od0nnAwUXG074qYdSqAuW4U",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "blocktergame.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "blocktergame",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "blocktergame.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "28370993719",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:28370993719:web:becbb8517a895f4b0275b2",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-RLX4H528YR"
 };
+
+// Log if using environment variables or fallback
+if (import.meta.env.VITE_FIREBASE_API_KEY) {
+  console.log('🔐 Using Firebase credentials from .env file');
+} else {
+  console.warn('⚠️  Using hardcoded Firebase credentials. For production, use .env file!');
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
